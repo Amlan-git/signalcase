@@ -22,14 +22,16 @@ Files: contracts/*.schema.json, contracts/examples/*.json, packages/contracts/, 
 
 Consumes: CONTRACTS.md. Produces: schema-validated records, generated TS/Python models, verified bootstrap and lint/test scripts.
 
-- [ ] Install compatible pinned Python/Node dependencies; record exact versions.
-- [ ] Write canonical schemas and complete fixture bundles for reproduced, blocked and failed states.
-- [ ] Verify schema rejection for missing evidence, invalid outcome and negative counts.
-- [ ] Generate shared language models; prove roundtrip compatibility using the same fixture.
-- [ ] Define and verify scripts: npm run lint, npm run typecheck, npm test; uv run pytest. Put real commands in README.
-- [ ] Add CI for these checks with zero paid model calls; no secrets on pull requests.
+- [x] Install compatible pinned Python/Node dependencies; record exact versions.
+- [x] Write canonical schemas and complete fixture bundles for reproduced, blocked and failed states.
+- [x] Verify schema rejection for missing evidence, invalid outcome and negative counts.
+- [x] Generate shared language models; prove roundtrip compatibility using the same fixture.
+- [x] Define and verify scripts: npm run lint, npm run typecheck, npm test; uv run pytest. Put real commands in README.
+- [x] Add CI for these checks with zero paid model calls; no secrets on pull requests.
 - [ ] Confirm Bedrock model/region access with an authorized single smoke call and record choice/cost basis. If unauthorized, keep fixture work progressing and document access as a deployment blocker.
 - [ ] Reviewer approves contracts; merge before team consumer work.
+
+The Bedrock smoke call remains deferred because no AWS credentials or paid-call authorization have been provided. Contract review remains open until a teammate approves the T0 pull request.
 
 ### T1 — Judge interface (Teammate 1; after T0)
 

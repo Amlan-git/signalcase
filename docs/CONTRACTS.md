@@ -1,21 +1,24 @@
 # Shared contracts — version 1
 
-These wire formats are the coordination baseline. T0 creates JSON Schemas under contracts/ and generates matching Python/TypeScript models. No team may independently rename fields. All IDs are server-issued UUID strings, all timestamps UTC RFC3339, money integer minor units. The contracts/examples directory is reserved for the fixtures generated in T0; no executable schemas or fixture files exist yet.
+These wire formats are the coordination baseline. T0 maintains the canonical JSON Schema and generated Python/TypeScript models. No team may independently rename fields. All IDs are server-issued UUID strings, all timestamps UTC RFC3339, money integer minor units. The `contracts/examples` directory contains synthetic state fixtures for parallel development.
+
+The canonical schema is `contracts/signalcase.schema.json`. Generated consumers are `packages/contracts/python/signalcase_contracts/models.py` and `packages/contracts/typescript/src/generated.ts`. Python cross-record validation lives in `signalcase_contracts.validation`.
 
 ## Data records
 
 - Conversation: id, workspace_id, source (string), external_id (string or null), text, created_at.
 - Document: id, workspace_id, title, text, version (string). Source passages use document_id and exact quote.
 - ExistingIssue: id, workspace_id, title, description, status.
-- Job: id, workspace_id, status, created_at, updated_at, deadline_at, group_ids (array), report_ids (array), error (null or Error), metrics.
+- Job: id, workspace_id, status, created_at, updated_at, deadline_at, input (conversation_ids, max_groups, seed_version), group_ids (array), report_ids (array), error (null or Error), metrics. Persisting the bounded input and sandbox seed version makes evaluation runs traceable.
 - Group: id, workspace_id, conversation_ids, claim (string), prerequisites (array of strings), unknowns (array of strings).
 - Event: id, job_id, workspace_id, sequence (positive integer), created_at, kind (phase|action|observation|warning|completion), message, evidence_ids.
-- Evidence: id, job_id, workspace_id, kind (screenshot|dom|action|document_excerpt|calculation), created_at, storage_key, sha256, mime_type, summary.
-- Report: id, job_id, workspace_id, group_id, title, outcome, interpretation, source_conversation_ids, expected (text, document_ids, assumption boolean), actual (text, evidence_ids), steps (ordered array of action/observation/evidence_ids), attempts (array of result/evidence_ids), duplicate_candidates (array of issue_id/reason), limitations (string array), proposed_acceptance_checks (string array), evidence_ids, replay_status (not_generated|not_run|passed|failed).
-- Metrics: model_calls, browser_actions, input_tokens, output_tokens, duration_ms, estimated_model_cost_usd (number or null). Unknown usage/cost stays null, never zero. All counts nonnegative.
+- Evidence: id, job_id, workspace_id, session_id, kind (screenshot|dom|action|document_excerpt|calculation), created_at, storage_key, sha256, mime_type, summary, document_id, quote. Browser/action evidence has a non-null session_id; document excerpts have a null session_id and preserve the exact source passage through document_id and quote.
+- Report: id, job_id, workspace_id, group_id, title, outcome, interpretation, source_conversation_ids, expected (text, document_ids, assumption boolean), actual (text, evidence_ids), steps (ordered array of action/observation/evidence_ids), attempts (array of session_id/result/evidence_ids), duplicate_candidates (array of issue_id/reason), limitations (string array), proposed_acceptance_checks (string array), evidence_ids, replay_status (not_generated|not_run|passed|failed). Every report, observation, step and attempt cites recorded evidence. A passed replay requires at least two distinct session IDs with distinct session-linked evidence.
+- Metrics: model_calls, browser_actions, input_tokens, output_tokens, duration_ms, estimated_model_cost_usd_micros (integer or null). Cost uses millionths of one US dollar so small model charges remain precise without floating-point money. Unknown usage/cost stays null, never zero. All counts nonnegative.
 - Error: code, message, retryable. Codes: INVALID_INPUT, UNAUTHORIZED, NOT_FOUND, WORKSPACE_BUSY, MODEL_UNAVAILABLE, BROWSER_FAILED, DEADLINE_EXCEEDED, WORKER_LOST, STORAGE_FAILED, CONTRACT_INVALID.
 
 Report outcomes and interpretation enums are defined in TECHNICAL_SPEC.md. No arbitrary confidence percentages. Proposed acceptance checks are suggestions, not executed tests.
+`observed_defect` requires documented expected behavior (`assumption:false` with a supplied document); an unsupported customer expectation can remain `possible_feature_gap` or `unresolved`.
 
 ## Public API
 
@@ -52,6 +55,6 @@ Separate control routes: POST /control/workspaces/{id}/configure {coupon_loss:bo
 
 Evaluation reads fault state using a separate credential that is absent from agent deployment. Storefront assets, docs, errors and API responses must not expose fault flags or answer keys.
 
-## First frozen examples
+## Frozen examples
 
-Amlan owns contracts/examples/job.json and report.json. T0 must create examples with valid UUIDs and validate them against schema. Schema CI rejects additional fields, missing required fields, invalid enums and cross-record dangling references in fixture bundles. Breaking changes require schema version bump and coordinated consumer PRs.
+Amlan owns `contracts/examples/reproduced.json`, `blocked.json`, and `failed.json`. They use valid UUIDs and are validated by both Python and Node tests. Schema CI rejects additional fields, missing required fields, invalid enums and negative metrics; Python validation rejects cross-record dangling references and workspace violations. Breaking changes require a schema version bump and coordinated consumer PRs.

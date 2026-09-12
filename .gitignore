@@ -6,6 +6,8 @@
 *.key
 .aws/
 .venv/
+.python/
+.uv-cache/
 __pycache__/
 .pytest_cache/
 node_modules/

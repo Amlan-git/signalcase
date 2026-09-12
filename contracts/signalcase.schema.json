@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Amlan-git/signalcase/contracts/signalcase.schema.json",
+  "title": "SignalCase fixture bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "conversations",
+    "documents",
+    "existing_issues",
+    "groups",
+    "evidence",
+    "events",
+    "reports",
+    "jobs"
+  ],
+  "properties": {
+    "contract_version": { "const": "1" },
+    "conversations": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/Conversation" } },
+    "documents": { "type": "array", "items": { "$ref": "#/$defs/Document" } },
+    "existing_issues": { "type": "array", "items": { "$ref": "#/$defs/ExistingIssue" } },
+    "groups": { "type": "array", "items": { "$ref": "#/$defs/Group" } },
+    "evidence": { "type": "array", "items": { "$ref": "#/$defs/Evidence" } },
+    "events": { "type": "array", "items": { "$ref": "#/$defs/Event" } },
+    "reports": { "type": "array", "items": { "$ref": "#/$defs/Report" } },
+    "jobs": { "type": "array", "items": { "$ref": "#/$defs/Job" } }
+  },
+  "$defs": {
+    "Uuid": { "type": "string", "format": "uuid" },
+    "Timestamp": { "type": "string", "format": "date-time" },
+    "NonEmptyString": { "type": "string", "minLength": 1 },
+    "StringList": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "UuidList": { "type": "array", "items": { "$ref": "#/$defs/Uuid" }, "uniqueItems": true },
+    "Conversation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "workspace_id", "source", "external_id", "text", "created_at"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "workspace_id": { "$ref": "#/$defs/Uuid" },
+        "source": { "$ref": "#/$defs/NonEmptyString" },
+        "external_id": { "type": ["string", "null"] },
+        "text": { "type": "string", "minLength": 1, "maxLength": 10000 },
+        "created_at": { "$ref": "#/$defs/Timestamp" }
+      }
+    },
+    "Document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "workspace_id", "title", "text", "version"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "workspace_id": { "$ref": "#/$defs/Uuid" },
+        "title": { "$ref": "#/$defs/NonEmptyString" },
+        "text": { "$ref": "#/$defs/NonEmptyString" },
+        "version": { "$ref": "#/$defs/NonEmptyString" }
+      }
+    },
+    "ExistingIssue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "workspace_id", "title", "description", "status"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "workspace_id": { "$ref": "#/$defs/Uuid" },
+        "title": { "$ref": "#/$defs/NonEmptyString" },
+        "description": { "$ref": "#/$defs/NonEmptyString" },
+        "status": { "$ref": "#/$defs/NonEmptyString" }
+      }
+    },
+    "Group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "workspace_id", "conversation_ids", "claim", "prerequisites", "unknowns"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "workspace_id": { "$ref": "#/$defs/Uuid" },
+        "conversation_ids": { "type": "array", "$ref": "#/$defs/UuidList", "minItems": 1 },
+        "claim": { "$ref": "#/$defs/NonEmptyString" },
+        "prerequisites": { "$ref": "#/$defs/StringList" },
+        "unknowns": { "$ref": "#/$defs/StringList" }
+      }
+    },
+    "Evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "job_id", "workspace_id", "session_id", "kind", "created_at", "storage_key",
+        "sha256", "mime_type", "summary", "document_id", "quote"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "job_id": { "$ref": "#/$defs/Uuid" },
+        "workspace_id": { "$ref": "#/$defs/Uuid" },
+        "session_id": { "anyOf": [{ "$ref": "#/$defs/Uuid" }, { "type": "null" }] },
+        "kind": { "enum": ["screenshot", "dom", "action", "document_excerpt", "calculation"] },
+        "created_at": { "$ref": "#/$defs/Timestamp" },
+        "storage_key": { "$ref": "#/$defs/NonEmptyString" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "mime_type": { "$ref": "#/$defs/NonEmptyString" },
+        "summary": { "$ref": "#/$defs/NonEmptyString" },
+        "document_id": { "anyOf": [{ "$ref": "#/$defs/Uuid" }, { "type": "null" }] },
+        "quote": { "type": ["string", "null"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "document_excerpt" } }, "required": ["kind"] },
+          "then": {
+            "properties": {
+              "document_id": { "$ref": "#/$defs/Uuid" },
+              "quote": { "$ref": "#/$defs/NonEmptyString" },
+              "session_id": { "type": "null" }
+            }
+          },
+          "else": {
+            "properties": {
+              "document_id": { "type": "null" },
+              "quote": { "type": "null" },
+              "session_id": { "$ref": "#/$defs/Uuid" }
+            }
+          }
+        }
+      ]
+    },
+    "Event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "job_id", "workspace_id", "sequence", "created_at", "kind", "message", "evidence_ids"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "job_id": { "$ref": "#/$defs/Uuid" },
+        "workspace_id": { "$ref": "#/$defs/Uuid" },
+        "sequence": { "type": "integer", "minimum": 1 },
+        "created_at": { "$ref": "#/$defs/Timestamp" },
+        "kind": { "enum": ["phase", "action", "observation", "warning", "completion"] },
+        "message": { "$ref": "#/$defs/NonEmptyString" },
+        "evidence_ids": { "$ref": "#/$defs/UuidList" }
+      }
+    },
+    "ExpectedBehavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "document_ids", "assumption"],
+      "properties": {
+        "text": { "$ref": "#/$defs/NonEmptyString" },
+        "document_ids": { "$ref": "#/$defs/UuidList" },
+        "assumption": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "assumption": { "const": false } }, "required": ["assumption"] },
+          "then": { "properties": { "document_ids": { "type": "array", "minItems": 1 } } }
+        }
+      ]
+    },
+    "ActualBehavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "evidence_ids"],
+      "properties": {
+        "text": { "$ref": "#/$defs/NonEmptyString" },
+        "evidence_ids": { "type": "array", "$ref": "#/$defs/UuidList", "minItems": 1 }
+      }
+    },
+    "InvestigationStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "observation", "evidence_ids"],
+      "properties": {
+        "action": { "$ref": "#/$defs/NonEmptyString" },
+        "observation": { "$ref": "#/$defs/NonEmptyString" },
+        "evidence_ids": { "type": "array", "$ref": "#/$defs/UuidList", "minItems": 1 }
+      }
+    },
+    "Attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session_id", "result", "evidence_ids"],
+      "properties": {
+        "session_id": { "$ref": "#/$defs/Uuid" },
+        "result": { "$ref": "#/$defs/NonEmptyString" },
+        "evidence_ids": { "type": "array", "$ref": "#/$defs/UuidList", "minItems": 1 }
+      }
+    },
+    "DuplicateCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["issue_id", "reason"],
+      "properties": {
+        "issue_id": { "$ref": "#/$defs/Uuid" },
+        "reason": { "$ref": "#/$defs/NonEmptyString" }
+      }
+    },
+    "Report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "job_id", "workspace_id", "group_id", "title", "outcome", "interpretation",
+        "source_conversation_ids", "expected", "actual", "steps", "attempts",
+        "duplicate_candidates", "limitations", "proposed_acceptance_checks", "evidence_ids", "replay_status"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "job_id": { "$ref": "#/$defs/Uuid" },
+        "workspace_id": { "$ref": "#/$defs/Uuid" },
+        "group_id": { "$ref": "#/$defs/Uuid" },
+        "title": { "$ref": "#/$defs/NonEmptyString" },
+        "outcome": { "enum": ["reproduced", "not_reproduced", "blocked"] },
+        "interpretation": { "enum": ["observed_defect", "possible_feature_gap", "documented_behavior", "unresolved"] },
+        "source_conversation_ids": { "type": "array", "$ref": "#/$defs/UuidList", "minItems": 1 },
+        "expected": { "$ref": "#/$defs/ExpectedBehavior" },
+        "actual": { "$ref": "#/$defs/ActualBehavior" },
+        "steps": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/InvestigationStep" } },
+        "attempts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Attempt" } },
+        "duplicate_candidates": { "type": "array", "items": { "$ref": "#/$defs/DuplicateCandidate" } },
+        "limitations": { "$ref": "#/$defs/StringList" },
+        "proposed_acceptance_checks": { "$ref": "#/$defs/StringList" },
+        "evidence_ids": { "type": "array", "$ref": "#/$defs/UuidList", "minItems": 1 },
+        "replay_status": { "enum": ["not_generated", "not_run", "passed", "failed"] }
+      }
+    },
+    "Metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_calls", "browser_actions", "input_tokens", "output_tokens", "duration_ms", "estimated_model_cost_usd_micros"],
+      "properties": {
+        "model_calls": { "type": "integer", "minimum": 0 },
+        "browser_actions": { "type": "integer", "minimum": 0 },
+        "input_tokens": { "type": "integer", "minimum": 0 },
+        "output_tokens": { "type": "integer", "minimum": 0 },
+        "duration_ms": { "type": "integer", "minimum": 0 },
+        "estimated_model_cost_usd_micros": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "retryable"],
+      "properties": {
+        "code": { "enum": ["INVALID_INPUT", "UNAUTHORIZED", "NOT_FOUND", "WORKSPACE_BUSY", "MODEL_UNAVAILABLE", "BROWSER_FAILED", "DEADLINE_EXCEEDED", "WORKER_LOST", "STORAGE_FAILED", "CONTRACT_INVALID"] },
+        "message": { "$ref": "#/$defs/NonEmptyString" },
+        "retryable": { "type": "boolean" }
+      }
+    },
+    "JobInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["conversation_ids", "max_groups", "seed_version"],
+      "properties": {
+        "conversation_ids": { "type": "array", "$ref": "#/$defs/UuidList", "minItems": 1 },
+        "max_groups": { "type": "integer", "minimum": 1, "maximum": 3 },
+        "seed_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "Job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "workspace_id", "status", "created_at", "updated_at", "deadline_at", "input", "group_ids", "report_ids", "error", "metrics"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "workspace_id": { "$ref": "#/$defs/Uuid" },
+        "status": { "enum": ["queued", "running", "completed", "failed", "cancelled"] },
+        "created_at": { "$ref": "#/$defs/Timestamp" },
+        "updated_at": { "$ref": "#/$defs/Timestamp" },
+        "deadline_at": { "$ref": "#/$defs/Timestamp" },
+        "input": { "$ref": "#/$defs/JobInput" },
+        "group_ids": { "$ref": "#/$defs/UuidList" },
+        "report_ids": { "$ref": "#/$defs/UuidList" },
+        "error": { "anyOf": [{ "$ref": "#/$defs/Error" }, { "type": "null" }] },
+        "metrics": { "$ref": "#/$defs/Metrics" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "failed" } }, "required": ["status"] },
+          "then": { "properties": { "error": { "$ref": "#/$defs/Error" } } }
+        },
+        {
+          "if": { "properties": { "status": { "enum": ["queued", "running", "completed"] } }, "required": ["status"] },
+          "then": { "properties": { "error": { "type": "null" } } }
+        }
+      ]
+    }
+  }
+}

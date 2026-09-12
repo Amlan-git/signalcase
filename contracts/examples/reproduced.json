@@ -1,0 +1,138 @@
+{
+  "contract_version": "1",
+  "conversations": [{
+    "id": "33333333-3333-4333-8333-333333333333",
+    "workspace_id": "11111111-1111-4111-8111-111111111111",
+    "source": "support_chat",
+    "external_id": "CHAT-42",
+    "text": "SAVE10 disappeared when I changed quantity to two.",
+    "created_at": "2026-09-12T12:00:00Z"
+  }],
+  "documents": [{
+    "id": "44444444-4444-4444-8444-444444444444",
+    "workspace_id": "11111111-1111-4111-8111-111111111111",
+    "title": "Coupon policy",
+    "text": "SAVE10 gives ten percent off eligible items until checkout.",
+    "version": "1"
+  }],
+  "existing_issues": [],
+  "groups": [{
+    "id": "55555555-5555-4555-8555-555555555555",
+    "workspace_id": "11111111-1111-4111-8111-111111111111",
+    "conversation_ids": ["33333333-3333-4333-8333-333333333333"],
+    "claim": "Changing quantity removes the documented discount.",
+    "prerequisites": ["Eligible item", "SAVE10 accepted"],
+    "unknowns": []
+  }],
+  "evidence": [
+    {
+      "id": "66666666-6666-4666-8666-666666666666",
+      "job_id": "22222222-2222-4222-8222-222222222222",
+      "workspace_id": "11111111-1111-4111-8111-111111111111",
+      "session_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaac",
+      "kind": "screenshot",
+      "created_at": "2026-09-12T12:01:00Z",
+      "storage_key": "workspaces/11111111-1111-4111-8111-111111111111/jobs/22222222-2222-4222-8222-222222222222/evidence/66666666-6666-4666-8666-666666666666",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "mime_type": "image/png",
+      "summary": "Cart shows two items at 20,000 minor units after SAVE10.",
+      "document_id": null,
+      "quote": null
+    },
+    {
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab",
+      "job_id": "22222222-2222-4222-8222-222222222222",
+      "workspace_id": "11111111-1111-4111-8111-111111111111",
+      "session_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad",
+      "kind": "screenshot",
+      "created_at": "2026-09-12T12:01:30Z",
+      "storage_key": "workspaces/11111111-1111-4111-8111-111111111111/jobs/22222222-2222-4222-8222-222222222222/evidence/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "mime_type": "image/png",
+      "summary": "Fresh cart session again shows two items at 20,000 minor units after SAVE10.",
+      "document_id": null,
+      "quote": null
+    },
+    {
+      "id": "77777777-7777-4777-8777-777777777777",
+      "job_id": "22222222-2222-4222-8222-222222222222",
+      "workspace_id": "11111111-1111-4111-8111-111111111111",
+      "session_id": null,
+      "kind": "document_excerpt",
+      "created_at": "2026-09-12T12:00:30Z",
+      "storage_key": "workspaces/11111111-1111-4111-8111-111111111111/jobs/22222222-2222-4222-8222-222222222222/evidence/77777777-7777-4777-8777-777777777777",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "mime_type": "text/plain",
+      "summary": "Coupon policy states SAVE10 remains active until checkout.",
+      "document_id": "44444444-4444-4444-8444-444444444444",
+      "quote": "SAVE10 gives ten percent off eligible items until checkout."
+    }
+  ],
+  "events": [{
+    "id": "88888888-8888-4888-8888-888888888888",
+    "job_id": "22222222-2222-4222-8222-222222222222",
+    "workspace_id": "11111111-1111-4111-8111-111111111111",
+    "sequence": 1,
+    "created_at": "2026-09-12T12:01:00Z",
+    "kind": "observation",
+    "message": "Observed discount missing after quantity changed.",
+    "evidence_ids": ["66666666-6666-4666-8666-666666666666"]
+  }],
+  "reports": [{
+    "id": "99999999-9999-4999-8999-999999999999",
+    "job_id": "22222222-2222-4222-8222-222222222222",
+    "workspace_id": "11111111-1111-4111-8111-111111111111",
+    "group_id": "55555555-5555-4555-8555-555555555555",
+    "title": "SAVE10 is removed after quantity change",
+    "outcome": "reproduced",
+    "interpretation": "observed_defect",
+    "source_conversation_ids": ["33333333-3333-4333-8333-333333333333"],
+    "expected": {
+      "text": "Two eligible items retain the ten-percent discount.",
+      "document_ids": ["44444444-4444-4444-8444-444444444444"],
+      "assumption": false
+    },
+    "actual": {
+      "text": "The cart total changed to 20,000 minor units.",
+      "evidence_ids": ["66666666-6666-4666-8666-666666666666"]
+    },
+    "steps": [{
+      "action": "Apply SAVE10, then set quantity to two.",
+      "observation": "The discount line disappeared.",
+      "evidence_ids": ["66666666-6666-4666-8666-666666666666"]
+    }],
+    "attempts": [
+      {"session_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaac", "result": "Observed 20,000.", "evidence_ids": ["66666666-6666-4666-8666-666666666666"]},
+      {"session_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad", "result": "Observed 20,000 again in a fresh cart session.", "evidence_ids": ["aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab"]}
+    ],
+    "duplicate_candidates": [],
+    "limitations": ["Tested in the supplied sandbox only."],
+    "proposed_acceptance_checks": ["Changing quantity preserves SAVE10 for eligible items."],
+    "evidence_ids": ["66666666-6666-4666-8666-666666666666", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab", "77777777-7777-4777-8777-777777777777"],
+    "replay_status": "passed"
+  }],
+  "jobs": [{
+    "id": "22222222-2222-4222-8222-222222222222",
+    "workspace_id": "11111111-1111-4111-8111-111111111111",
+    "status": "completed",
+    "created_at": "2026-09-12T12:00:00Z",
+    "updated_at": "2026-09-12T12:02:00Z",
+    "deadline_at": "2026-09-12T12:10:00Z",
+    "input": {
+      "conversation_ids": ["33333333-3333-4333-8333-333333333333"],
+      "max_groups": 1,
+      "seed_version": 1
+    },
+    "group_ids": ["55555555-5555-4555-8555-555555555555"],
+    "report_ids": ["99999999-9999-4999-8999-999999999999"],
+    "error": null,
+    "metrics": {
+      "model_calls": 8,
+      "browser_actions": 12,
+      "input_tokens": 2400,
+      "output_tokens": 800,
+      "duration_ms": 120000,
+      "estimated_model_cost_usd_micros": null
+    }
+  }]
+}
