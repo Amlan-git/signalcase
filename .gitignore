@@ -1,0 +1,17 @@
+# Secrets and generated local data
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.aws/
+.venv/
+__pycache__/
+.pytest_cache/
+node_modules/
+dist/
+coverage/
+.local-data/
+playwright-report/
+test-results/
+.DS_Store
